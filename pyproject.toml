@@ -37,6 +37,8 @@ include = ["app"]
 extraPaths = ["."]
 venvPath = "."
 venv = ".venv"
+typeCheckingMode = "standard"
+reportUnannotatedClassAttribute = false
 
 [tool.ruff]
 line-length = 88

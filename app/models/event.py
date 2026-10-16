@@ -30,4 +30,5 @@ class Event(TimestampMixin, Base):
         default=EventStatus.DRAFT,
     )
     start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
     tiers: Mapped[list["TicketTier"]] = relationship(back_populates="event")

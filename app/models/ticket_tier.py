@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
+    from app.models.booking import Booking
     from app.models.event import Event
 
 
@@ -26,3 +27,4 @@ class TicketTier(TimestampMixin, Base):
     sold: Mapped[int] = mapped_column(server_default="0")
 
     event: Mapped["Event"] = relationship(back_populates="tiers")
+    bookings: Mapped[list["Booking"]] = relationship(back_populates="tier")

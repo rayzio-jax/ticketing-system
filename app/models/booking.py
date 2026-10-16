@@ -17,6 +17,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin, enum_values
 
 if TYPE_CHECKING:
+    from app.models.payment import Payment
     from app.models.ticket_tier import TicketTier
     from app.models.user import User
 
@@ -51,3 +52,4 @@ class Booking(TimestampMixin, Base):
 
     user: Mapped["User"] = relationship(back_populates="bookings")
     tier: Mapped["TicketTier"] = relationship(back_populates="bookings")
+    payments: Mapped[list["Payment"]] = relationship(back_populates="booking")

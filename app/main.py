@@ -1,11 +1,11 @@
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import DbSession
 from app.core.config import settings
-from app.db.session import engine, get_db
+from app.db.session import engine
 
 
 @asynccontextmanager
@@ -30,6 +30,6 @@ async def root():
 
 
 @app.get("/health", tags=["Health"])
-async def health(db: AsyncSession = Depends(get_db)):
+async def health(db: DbSession):
     await db.execute(text("SELECT 1"))
     return {"status": "ok", "db": "connected"}

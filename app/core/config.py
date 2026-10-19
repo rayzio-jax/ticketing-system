@@ -10,6 +10,10 @@ class Settings(BaseSettings):
 
     app_name: str = "Ticketing API"
     database_url: str
+    jwt_algorithm: str
+    jwt_secret: str
+    access_token_expiration_minutes: int
+    refresh_token_expiration_days: int
 
 
-settings = Settings()
+settings = Settings()  # pyright: ignore[reportCallIssue]

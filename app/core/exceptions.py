@@ -32,6 +32,6 @@ class ForbiddenError(AppError):
     message = "You do not have access"
 
 
-class InvalidCredentials(UnauthorizedError):
+class InvalidCredentialsError(UnauthorizedError):
     code = "invalid_credentials"
     message = "Invalid email or password"

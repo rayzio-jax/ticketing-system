@@ -51,7 +51,9 @@ async def login(payload: LoginRequest, db: DbSession):
     "/refresh",
     response_model=AccessTokenResponse,
     summary="Get a new access token",
-    responses={401: {"model": ErrorResponse, "description": "Invalid token"}},
+    responses={
+        401: {"model": ErrorResponse, "description": "Invalid or expired token"}
+    },
 )
 async def refresh(payload: RefreshRequest, db: DbSession):
     """Exchange a valid `refresh_token` for a new `access_token`.

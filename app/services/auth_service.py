@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import (
     ConflictError,
-    InvalidCredentials,
+    InvalidCredentialsError,
     UnauthorizedError,
 )
 from app.core.security import (
@@ -32,7 +32,7 @@ def _normalize_email(email: str) -> str:
 
 
 async def register(db: AsyncSession, payload: RegisterRequest) -> User:
-    """Create a customer account. Role has set to `customer` by default."""
+    """Create a customer account. Role is set to `customer` by default."""
     email = _normalize_email(payload.email)
 
     result = await db.execute(select(User).where(User.email == email))
@@ -57,7 +57,7 @@ async def login(db: AsyncSession, payload: LoginRequest) -> TokenResponse:
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
     if user is None or not verify_password(payload.password, user.password_hash):
-        raise InvalidCredentials()
+        raise InvalidCredentialsError()
 
     return TokenResponse(
         access_token=create_access_token(user.id),

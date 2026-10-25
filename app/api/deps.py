@@ -36,3 +36,6 @@ async def get_current_user(credentials: BearerCredentials, db: DbSession) -> Use
         raise UnauthorizedError()
 
     return user
+
+
+CurrentUser = Annotated[User, Depends(get_current_user)]

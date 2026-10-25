@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 import app.services.auth_service as auth_service
-from app.api.deps import DbSession
+from app.api.deps import CurrentUser, DbSession
 from app.schemas.auth import (
     AccessTokenResponse,
     LoginRequest,
@@ -61,3 +61,18 @@ async def refresh(payload: RefreshRequest, db: DbSession):
     again.
     """
     return await auth_service.refresh_session(db, payload)
+
+
+@router.post(
+    "/me",
+    response_model=UserResponse,
+    summary="Check the current logged in user",
+    responses={401: {"model": ErrorResponse, "description": "Unauthorize access"}},
+)
+async def me(current_user: CurrentUser):
+    """Return the profile of the user who owns the `access_token`.
+
+    Refresh tokens are rejected. If the access token has expired, get a new one
+    from `/auth/refresh`.
+    """
+    return current_user

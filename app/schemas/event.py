@@ -1,20 +1,25 @@
-from datetime import UTC, datetime
+from datetime import datetime
+from typing import Annotated
 from uuid import UUID
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, StringConstraints
 
 from app.models.event import EventStatus
 
+StrConst = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=3, max_length=50)
+]
+
 
 class EventCreate(BaseModel):
-    name: str = Field(min_length=3, max_length=50)
-    venue: str = Field(min_length=3, max_length=50)
+    name: StrConst
+    venue: StrConst
     start_at: AwareDatetime
 
 
 class EventUpdate(BaseModel):
-    name: str | None = Field(default=None, min_length=3, max_length=50)
-    venue: str | None = Field(default=None, min_length=3, max_length=50)
+    name: StrConst | None = None
+    venue: StrConst | None = None
     status: EventStatus | None = None
     start_at: AwareDatetime | None
 
@@ -23,8 +28,8 @@ class EventResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
-    name: str
-    venue: str
+    name: StrConst
+    venue: StrConst
     status: EventStatus
     start_at: datetime
     created_at: datetime

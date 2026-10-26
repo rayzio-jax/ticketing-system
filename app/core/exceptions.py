@@ -35,3 +35,9 @@ class ForbiddenError(AppError):
 class InvalidCredentialsError(UnauthorizedError):
     code = "invalid_credentials"
     message = "Invalid email or password"
+
+
+class ValidationError(AppError):
+    status_code = 422
+    code = "validation_error"
+    message = "Invalid input"

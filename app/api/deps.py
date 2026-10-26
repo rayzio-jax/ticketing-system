@@ -6,10 +6,11 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import UnauthorizedError
+from app.core.exceptions import ForbiddenError, UnauthorizedError
 from app.core.security import decode_jwt
 from app.db.session import get_db
 from app.models import User
+from app.models.user import UserRole
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -39,3 +40,13 @@ async def get_current_user(credentials: BearerCredentials, db: DbSession) -> Use
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+async def require_admin(user: CurrentUser) -> User:
+    if user.role != UserRole.ADMIN:
+        raise ForbiddenError("Admin access required")
+
+    return user
+
+
+AdminUser = Annotated[User, Depends(require_admin)]

@@ -26,14 +26,14 @@ async def get_current_user(credentials: BearerCredentials, db: DbSession) -> Use
         decoded = decode_jwt(credentials.credentials)
         uid = UUID(decoded["sub"])
     except (jwt.InvalidTokenError, KeyError, ValueError):
-        raise UnauthorizedError("Invalid token") from None
+        raise UnauthorizedError("Invalid or expired token") from None
 
     if decoded.get("type") != "access":
-        raise UnauthorizedError("Invalid token")
+        raise UnauthorizedError("Invalid or expired token")
 
     user = await db.get(User, uid)
     if user is None:
-        raise UnauthorizedError()
+        raise UnauthorizedError("Invalid or expired token")
 
     return user
 

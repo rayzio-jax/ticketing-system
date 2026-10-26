@@ -63,11 +63,13 @@ async def refresh(payload: RefreshRequest, db: DbSession):
     return await auth_service.refresh_session(db, payload)
 
 
-@router.post(
+@router.get(
     "/me",
     response_model=UserResponse,
-    summary="Check the current logged in user",
-    responses={401: {"model": ErrorResponse, "description": "Unauthorize access"}},
+    summary="Get the current user",
+    responses={
+        401: {"model": ErrorResponse, "description": "Invalid or expired token"}
+    },
 )
 async def me(current_user: CurrentUser):
     """Return the profile of the user who owns the `access_token`.

@@ -17,6 +17,7 @@ router = APIRouter(prefix="/events", tags=["events"])
         401: {"model": ErrorResponse, "description": "Invalid or expired token"},
         403: {"model": ErrorResponse, "description": "Admin access required"},
         422: {"model": ErrorResponse, "description": "Start time is not in the future"},
+        409: {"model": ErrorResponse, "description": "Event already exists"},
     },
 )
 async def create_event(db: DbSession, payload: EventCreate, _admin: AdminUser):

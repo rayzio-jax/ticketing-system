@@ -25,7 +25,15 @@ async def create_event(db: AsyncSession, payload: EventCreate) -> Event:
     return event
 
 
-async def get_event(db: AsyncSession, id: UUID) -> Event:
+async def read_event(db: AsyncSession, id: UUID) -> Event:
+    event = await db.get(Event, id)
+    if event is None:
+        raise NotFoundError("Event not found")
+
+    return event
+
+
+async def read_public_event(db: AsyncSession, id: UUID) -> Event:
     event = await db.get(Event, id)
     if event is None or event.status == EventStatus.DRAFT:
         raise NotFoundError("Event not found")

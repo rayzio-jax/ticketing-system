@@ -20,11 +20,9 @@ BearerCredentials = Annotated[
 ]
 
 
-async def get_current_user(credentials: BearerCredentials, db: DbSession) -> User:
-    if credentials is None:
-        raise UnauthorizedError("Missing token")
+async def _user_from_token(token: str, db: AsyncSession) -> User:
     try:
-        decoded = decode_jwt(credentials.credentials)
+        decoded = decode_jwt(token)
         uid = UUID(decoded["sub"])
     except (jwt.InvalidTokenError, KeyError, ValueError):
         raise UnauthorizedError("Invalid or expired token") from None
@@ -39,7 +37,22 @@ async def get_current_user(credentials: BearerCredentials, db: DbSession) -> Use
     return user
 
 
+async def get_current_user(credentials: BearerCredentials, db: DbSession) -> User:
+    if credentials is None:
+        raise UnauthorizedError("Missing token")
+    return await _user_from_token(credentials.credentials, db)
+
+
+async def get_optional_user(
+    credentials: BearerCredentials, db: DbSession
+) -> User | None:
+    if credentials is None:
+        return None
+    return await _user_from_token(credentials.credentials, db)
+
+
 CurrentUser = Annotated[User, Depends(get_current_user)]
+OptionalUser = Annotated[User | None, Depends(get_optional_user)]
 
 
 async def require_admin(user: CurrentUser) -> User:

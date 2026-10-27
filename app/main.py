@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
@@ -32,6 +33,20 @@ async def app_error_handler(_request: Request, exc: AppError) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
         content={"error": {"code": exc.code, "message": exc.message}},
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(
+    _request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    message = "; ".join(
+        f"{'.'.join(str(p) for p in err['loc'] if p != 'body')}: {err['msg']}"
+        for err in exc.errors()
+    )
+    return JSONResponse(
+        status_code=422,
+        content={"error": {"code": "validation_error", "message": message}},
     )
 
 

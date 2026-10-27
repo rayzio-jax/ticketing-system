@@ -1,8 +1,7 @@
 from datetime import datetime
-from typing import Annotated
 from uuid import UUID
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from app.models.event import EventStatus
 

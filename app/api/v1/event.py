@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from app.api.deps import UUID, AdminUser, DbSession, OptionalUser
 from app.models.user import UserRole
 from app.schemas.error import ErrorResponse
-from app.schemas.event import EventCreate, EventResponse
+from app.schemas.event import EventCreate, EventResponse, EventUpdate
 from app.services import event_service
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -36,8 +36,11 @@ async def create_event(db: DbSession, payload: EventCreate, _admin: AdminUser):
     summary="Get an event",
     responses={
         401: {"model": ErrorResponse, "description": "Invalid or expired token"},
-        404: {"model": ErrorResponse, "description": "Invalid id or event is drafted"},
-        422: {"model": ErrorResponse, "description": "Invalid id"},
+        404: {
+            "model": ErrorResponse,
+            "description": "Invalid event id or event is drafted",
+        },
+        422: {"model": ErrorResponse, "description": "Invalid event id"},
     },
 )
 async def get_event(db: DbSession, event_id: UUID, user: OptionalUser):
@@ -49,3 +52,27 @@ async def get_event(db: DbSession, event_id: UUID, user: OptionalUser):
     if user is not None and user.role == UserRole.ADMIN:
         return await event_service.read_event(db, event_id)
     return await event_service.read_public_event(db, event_id)
+
+
+@router.patch(
+    "/{event_id}",
+    response_model=EventResponse,
+    summary="Update an event",
+    responses={
+        401: {"model": ErrorResponse, "description": "Invalid or expired token"},
+        403: {"model": ErrorResponse, "description": "Admin access required"},
+        404: {"model": ErrorResponse, "description": "Event is not found"},
+        409: {"model": ErrorResponse, "description": "Event already exists"},
+        422: {"model": ErrorResponse, "description": "Invalid input"},
+    },
+)
+async def update_event(
+    db: DbSession, event_id: UUID, payload: EventUpdate, _admin: AdminUser
+):
+    """Partially update an event. Only admins can access this endpoint.
+
+    Only the fields sent in the request body are changed. Fields set to `null`
+    are ignored. A `409` is returned if the new name, venue, and start time match
+    another event.
+    """
+    return await event_service.update_event(db, event_id, payload)

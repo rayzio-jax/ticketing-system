@@ -121,9 +121,9 @@ curl http://localhost:8000/health
 - [x] Project setup (uv, Docker Compose, Postgres)
 - [x] Async DB connection and session management
 - [x] Health check endpoint
-- [ ] Models and first Alembic migration
-- [ ] Auth: register, login, JWT, refresh token
-- [ ] RBAC (admin / customer)
+- [x] Models and first Alembic migration
+- [x] Auth: register, login, JWT, refresh token
+- [x] RBAC (admin / customer)
 - [ ] Event and ticket tier management
 - [ ] Booking flow (naive version)
 - [ ] **Concurrency control** (row locking / atomic update) with proof via load test
@@ -145,9 +145,71 @@ curl http://localhost:8000/health
 
 > _Endpoint table will be added as features land._
 
-| Method | Endpoint  | Description                 | Auth   |
-| ------ | --------- | --------------------------- | ------ |
-| GET    | `/health` | Service and DB health check | Public |
+| Method | Endpoint             | Description                                      | Auth                           |
+| ------ | -------------------- | ------------------------------------------------ | ------------------------------ |
+| GET    | `/health`            | Service and database health check                | Public                         |
+| POST   | `/auth/register`     | Register a new customer account                  | Public                         |
+| POST   | `/auth/login`        | Exchange credentials for tokens                  | Public                         |
+| POST   | `/auth/refresh`      | Exchange a refresh token for a new access token  | Public (refresh token in body) |
+| GET    | `/auth/me`           | Get the current user                             | Bearer                         |
+| POST   | `/events`            | Create an event (always starts as `draft`)       | Admin                          |
+| GET    | `/events`            | List events, cursor-paginated (excludes `draft`) | Public                         |
+| GET    | `/events/{event_id}` | Get one event (admins can see `draft`)           | Public / Admin                 |
+| PATCH  | `/events/{event_id}` | Partially update an event                        | Admin                          |
+
+## Conventions
+
+### Authentication
+
+Protected endpoints expect an access token in the `Authorization` header:
+
+```
+Authorization: Bearer <access_token>
+```
+
+- **Access token**: short-lived, sent on every protected request.
+- **Refresh token**: long-lived, only used on `POST /auth/refresh`. It is rejected on every other endpoint.
+- In Swagger, log in first, click **Authorize**, and paste the `access_token` (without the `Bearer` prefix).
+  Token lifetimes are configurable through environment variables.
+
+### Roles
+
+| Role       | How it is assigned                                          |
+| ---------- | ----------------------------------------------------------- |
+| `customer` | Default for every registration                              |
+| `admin`    | Set directly in the database (registration never grants it) |
+
+### Date and time
+
+All timestamps use ISO 8601 and must include a timezone offset, for example `2026-12-31T19:00:00+07:00` or `2026-12-31T12:00:00Z`. Values without a timezone are rejected. Times are stored and returned in UTC.
+
+### Error format
+
+Every error uses the same shape:
+
+```json
+{
+  "error": {
+    "code": "conflict",
+    "message": "Event already exists"
+  }
+}
+```
+
+Validation errors (`422`) can also carry per-field details:
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Request validation failed",
+    "details": {
+      "name": "String should have at least 3 characters",
+      "start_at": "Field required"
+    }
+  }
+}
+```
 
 ## Development
 

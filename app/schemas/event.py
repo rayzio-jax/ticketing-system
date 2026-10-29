@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
@@ -32,3 +33,16 @@ class EventResponse(BaseModel):
     status: EventStatus
     start_at: datetime
     created_at: datetime
+
+
+class EventListParams(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    limit: int = Field(default=20, ge=1, le=100)
+    cursor: str | None = None
+    order: Literal["asc", "desc"] = "asc"
+
+
+class EventListResponse(BaseModel):
+    items: list[EventResponse]
+    next_cursor: str | None

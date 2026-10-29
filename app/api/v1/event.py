@@ -1,9 +1,11 @@
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import APIRouter, Query
 
 from app.api.deps import UUID, AdminUser, DbSession, OptionalUser
 from app.models.user import UserRole
 from app.schemas.error import ErrorResponse
-from app.schemas.event import EventCreate, EventResponse, EventUpdate
+from app.schemas.event import EventCreate, EventListParams, EventResponse, EventUpdate
 from app.services import event_service
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -52,6 +54,28 @@ async def get_event(db: DbSession, event_id: UUID, user: OptionalUser):
     if user is not None and user.role == UserRole.ADMIN:
         return await event_service.read_event(db, event_id)
     return await event_service.read_public_event(db, event_id)
+
+
+@router.get(
+    "",
+    response_model=list[EventResponse],
+    summary="List public events",
+    responses={
+        422: {
+            "model": ErrorResponse,
+            "description": "Invalid query parameters or cursor",
+        }
+    },
+)
+async def get_all_events(db: DbSession, params: Annotated[EventListParams, Query()]):
+    """List events that are not in `draft`, ordered by `start_at`.
+
+    Use `next_cursor` from the response as `cursor` to get the next page. When
+    `next_cursor` is `null`, there are no more pages. Keep the same `order`
+    across pages.
+    """
+    events, next_cursor = await event_service.read_all_public_events(db, params)
+    return {"items": events, "next_cursor": next_cursor}
 
 
 @router.patch(

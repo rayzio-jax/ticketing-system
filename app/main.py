@@ -40,13 +40,22 @@ async def app_error_handler(_request: Request, exc: AppError) -> JSONResponse:
 async def validation_error_handler(
     _request: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    message = "; ".join(
-        f"{'.'.join(str(p) for p in err['loc'] if p != 'body')}: {err['msg']}"
-        for err in exc.errors()
-    )
+    details: dict[str, list[str]] = {}
+    for err in exc.errors():
+        loc = ".".join(str(p) for p in err["loc"] if p != "body")
+        key = loc or "body"
+        msg = err["msg"].removeprefix("Value error, ")
+        details.setdefault(key, []).append(msg)  # simpan error pertama per field
+
     return JSONResponse(
         status_code=422,
-        content={"error": {"code": "validation_error", "message": message}},
+        content={
+            "error": {
+                "code": "validation_error",
+                "message": "Request validation failed",
+                "details": details,
+            }
+        },
     )
 
 

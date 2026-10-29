@@ -68,7 +68,8 @@ async def get_event(db: DbSession, event_id: UUID, user: OptionalUser):
     },
 )
 async def get_all_events(db: DbSession, params: Annotated[EventListParams, Query()]):
-    """List events that are not in `draft`, ordered by `start_at`.
+    """List events that are not in `draft`, `ended` or `cancelled`.
+    Ordered by `start_at`.
 
     Use `next_cursor` from the response as `cursor` to get the next page. When
     `next_cursor` is `null`, there are no more pages. Keep the same `order`

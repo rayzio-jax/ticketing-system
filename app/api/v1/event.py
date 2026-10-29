@@ -102,8 +102,8 @@ async def update_event(
 ):
     """Partially update an event. Only admins can access this endpoint.
 
-    Only the fields sent in the request body are changed. Fields set to `null`
-    are ignored. A `409` is returned if the new name, venue, and start time match
+    Only the fields sent in the request body are changed. Fields cannot be `null`.
+    A `409` is returned if the new name, venue, and start time match
     another event.
     """
     return await event_service.update_event(db, event_id, payload)

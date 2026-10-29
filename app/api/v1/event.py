@@ -5,7 +5,13 @@ from fastapi import APIRouter, Query
 from app.api.deps import UUID, AdminUser, DbSession, OptionalUser
 from app.models.user import UserRole
 from app.schemas.error import ErrorResponse
-from app.schemas.event import EventCreate, EventListParams, EventResponse, EventUpdate
+from app.schemas.event import (
+    EventCreate,
+    EventListParams,
+    EventListResponse,
+    EventResponse,
+    EventUpdate,
+)
 from app.services import event_service
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -58,7 +64,7 @@ async def get_event(db: DbSession, event_id: UUID, user: OptionalUser):
 
 @router.get(
     "",
-    response_model=list[EventResponse],
+    response_model=EventListResponse,
     summary="List public events",
     responses={
         422: {

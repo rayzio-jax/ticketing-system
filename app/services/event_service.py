@@ -74,9 +74,9 @@ async def read_all_public_events(
     desc = params.order == "desc"
 
     stmt = select(Event).where(
-        Event.status != EventStatus.DRAFT
-        or Event.status != EventStatus.CANCELLED
-        or Event.status != EventStatus.ENDED
+        Event.status.not_in(
+            [EventStatus.DRAFT, EventStatus.ENDED, EventStatus.CANCELLED]
+        )
     )
 
     if params.cursor is not None:

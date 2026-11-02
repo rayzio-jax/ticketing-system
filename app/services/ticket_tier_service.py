@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 

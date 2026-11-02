@@ -7,7 +7,6 @@ from pydantic import BaseModel, ConfigDict, Field
 class TierCreate(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    event_id: UUID
     name: str
     price: int = Field(ge=0)
     quota: int = Field(gt=0)

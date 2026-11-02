@@ -9,15 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 from app.models import Event
-from app.models.event import EventStatus
+from app.models.event import EVENT_STATUS_TRANSITION, EventStatus
 from app.schemas.event import EventCreate, EventListParams, EventUpdate
-
-EVENT_STATUS_TRANSITION: dict[EventStatus, set[EventStatus]] = {
-    EventStatus.DRAFT: {EventStatus.PUBLISHED, EventStatus.CANCELLED},
-    EventStatus.PUBLISHED: {EventStatus.ENDED, EventStatus.CANCELLED},
-    EventStatus.ENDED: set(),
-    EventStatus.CANCELLED: set(),
-}
 
 
 def _encode_cursor(event: Event) -> str:

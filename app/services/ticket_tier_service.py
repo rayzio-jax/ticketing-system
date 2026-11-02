@@ -6,9 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ConflictError, NotFoundError
 from app.models import TicketTier
-from app.models.event import Event
+from app.models.event import EVENT_STATUS_TRANSITION, Event
 from app.schemas.ticket_tier import TierCreate
-from app.services.event_service import EVENT_STATUS_TRANSITION
 
 
 async def create_tier(

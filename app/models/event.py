@@ -19,6 +19,14 @@ class EventStatus(enum.StrEnum):
     CANCELLED = "cancelled"
 
 
+EVENT_STATUS_TRANSITION: dict[EventStatus, set[EventStatus]] = {
+    EventStatus.DRAFT: {EventStatus.PUBLISHED, EventStatus.CANCELLED},
+    EventStatus.PUBLISHED: {EventStatus.ENDED, EventStatus.CANCELLED},
+    EventStatus.ENDED: set(),
+    EventStatus.CANCELLED: set(),
+}
+
+
 class Event(TimestampMixin, Base):
     __tablename__ = "events"
     __table_args__ = (

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, ForeignKey, String
+from sqlalchemy import CheckConstraint, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
@@ -17,6 +17,7 @@ class TicketTier(TimestampMixin, Base):
         CheckConstraint("sold >= 0 AND sold <= quota", name="sold_within_quota"),
         CheckConstraint("quota > 0", name="quota_positive"),
         CheckConstraint("price >= 0", name="price_non_negative"),
+        UniqueConstraint("event_id", "name", name="event_tier_name"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

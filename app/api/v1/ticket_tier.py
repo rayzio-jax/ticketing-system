@@ -21,7 +21,7 @@ router = APIRouter(prefix="/evets/{event_id}/tiers", tags=["tiers"])
         404: {"model": ErrorResponse, "description": "Event not found"},
         409: {
             "model": ErrorResponse,
-            "description": "Tier name already exists for this event, or the event is locked",
+            "description": "Tier already exists for this event, or event is locked",
         },
         422: {"model": ErrorResponse, "description": "Invalid input"},
     },

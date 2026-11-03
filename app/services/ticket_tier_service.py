@@ -22,7 +22,7 @@ async def create_tier(
 
     tier = TicketTier(
         event_id=event_id,
-        name=payload.name,
+        name=payload.name.capitalize(),
         price=payload.price,
         quota=payload.quota,
     )
@@ -62,6 +62,8 @@ async def update_tier(
         )
 
     for field, value in payload.model_dump(exclude_unset=True).items():
+        if field == tier.name:
+            field = field.capitalize()
         setattr(tier, field, value)
 
     try:

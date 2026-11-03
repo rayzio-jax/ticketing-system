@@ -30,3 +30,18 @@ class TierResponse(BaseModel):
     price: int
     quota: int
     created_at: datetime
+
+
+class EventInfo(BaseModel):
+    id: UUID
+    name: str
+
+
+class TierDetailResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    name: str
+    price: int
+    quota: int
+    event: EventInfo
+    created_at: datetime

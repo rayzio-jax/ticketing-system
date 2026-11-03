@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.base import PatchSchema
+
 
 class TierCreate(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -10,6 +12,14 @@ class TierCreate(BaseModel):
     name: str
     price: int = Field(ge=0)
     quota: int = Field(gt=0)
+
+
+class TierUpdate(PatchSchema):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
+    name: str | None = None
+    price: int | None = Field(default=None, ge=0)
+    quota: int | None = Field(default=None, gt=0)
 
 
 class TierResponse(BaseModel):

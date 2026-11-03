@@ -7,7 +7,7 @@ from app.schemas.error import ErrorResponse
 from app.schemas.ticket_tier import TierCreate, TierResponse, TierUpdate
 from app.services import ticket_tier_service
 
-router = APIRouter(prefix="/evets/{event_id}/tiers", tags=["tiers"])
+router = APIRouter(prefix="/events/{event_id}/tiers", tags=["tiers"])
 
 
 @router.post(
@@ -64,3 +64,16 @@ async def update_tier(
     modified. The `sold` counter is managed by bookings and cannot be set here.
     """
     return await ticket_tier_service.update_tier(db, event_id, tier_id, payload)
+
+
+@router.get(
+    "/{tier_id}",
+    response_model=TierResponse,
+    summary="Fetch a ticket tier",
+    responses={
+        404: {"model": ErrorResponse, "description": "Event or tier not found"},
+    },
+)
+async def get_tier(event_id: UUID, tier_id: int, db: DbSession):
+    """Public endpoint. Fetch a ticket tier of an event."""
+    return await ticket_tier_service.read_tier(db, event_id, tier_id)

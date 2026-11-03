@@ -73,3 +73,19 @@ async def update_tier(
         ) from None
     await db.refresh(tier)
     return tier
+
+
+async def read_tier(db: AsyncSession, event_id: UUID, tier_id: int) -> TicketTier:
+    event = await db.get(Event, event_id)
+    if event is None:
+        raise NotFoundError("Event is not found")
+
+    tier = await db.scalar(
+        select(TicketTier).where(
+            TicketTier.event_id == event_id, TicketTier.id == tier_id
+        )
+    )
+    if tier is None:
+        raise NotFoundError("Tier is not found")
+
+    return tier

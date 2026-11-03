@@ -14,7 +14,7 @@ async def create_tier(
 ) -> TicketTier:
     event = await db.get(Event, event_id)
     if event is None:
-        raise NotFoundError("Event not found")
+        raise NotFoundError("Event does not exists")
 
     if not EVENT_STATUS_TRANSITION[event.status]:
         raise ConflictError(f"Cannot add tiers to an event that is {event.status}")

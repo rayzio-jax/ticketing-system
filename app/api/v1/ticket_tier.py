@@ -18,7 +18,7 @@ router = APIRouter(prefix="/evets/{event_id}/tiers", tags=["tiers"])
     responses={
         401: {"model": ErrorResponse, "description": "Invalid or expired token"},
         403: {"model": ErrorResponse, "description": "Admin access required"},
-        404: {"model": ErrorResponse, "description": "Event not found"},
+        404: {"model": ErrorResponse, "description": "Event does not exists"},
         409: {
             "model": ErrorResponse,
             "description": "Tier already exists for this event, or event is locked",

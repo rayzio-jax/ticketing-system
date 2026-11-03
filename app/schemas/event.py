@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
 from app.models.event import EventStatus
+from app.schemas.base import PatchSchema
 
 
 class EventCreate(BaseModel):
@@ -15,15 +16,8 @@ class EventCreate(BaseModel):
     start_at: AwareDatetime
 
 
-class EventUpdate(BaseModel):
+class EventUpdate(PatchSchema):
     model_config = ConfigDict(str_strip_whitespace=True)
-
-    @model_validator(mode="after")
-    def reject_explicit_null(self) -> Self:
-        for field in self.model_fields_set:
-            if getattr(self, field) is None:
-                raise ValueError(f"{field} cannot be null")
-        return self
 
     name: str | None = Field(default=None, min_length=3, max_length=50)
     venue: str | None = Field(default=None, min_length=3, max_length=50)

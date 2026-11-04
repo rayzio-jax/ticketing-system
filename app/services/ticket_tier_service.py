@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ConflictError, NotFoundError
 from app.models import TicketTier
-from app.models.event import EVENT_STATUS_TRANSITION, Event
+from app.models.event import EVENT_STATUS_TRANSITION, Event, EventStatus
 from app.schemas.ticket_tier import TierCreate, TierUpdate
 
 
@@ -77,9 +77,11 @@ async def update_tier(
     return tier
 
 
-async def read_tier(db: AsyncSession, event_id: UUID, tier_id: int) -> TicketTier:
+async def read_tier(
+    db: AsyncSession, event_id: UUID, tier_id: int, include_draft: bool
+) -> TicketTier:
     event = await db.get(Event, event_id)
-    if event is None:
+    if event is None or (event.status == EventStatus.DRAFT and not include_draft):
         raise NotFoundError("Event is not found")
 
     tier = await db.scalar(

@@ -2,7 +2,8 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
-from app.api.deps import AdminUser, DbSession
+from app.api.deps import AdminUser, DbSession, OptionalUser
+from app.models.user import UserRole
 from app.schemas.error import ErrorResponse
 from app.schemas.ticket_tier import TierCreate, TierResponse, TierUpdate
 from app.services import ticket_tier_service
@@ -69,11 +70,17 @@ async def update_tier(
 @router.get(
     "/{tier_id}",
     response_model=TierResponse,
-    summary="Fetch a ticket tier",
+    summary="Get a ticket tier",
     responses={
+        401: {"model": ErrorResponse, "description": "Invalid or expired token"},
         404: {"model": ErrorResponse, "description": "Event or tier not found"},
+        422: {"model": ErrorResponse, "description": "Invalid event or tier id"},
     },
 )
-async def get_tier(event_id: UUID, tier_id: int, db: DbSession):
-    """Public endpoint. Fetch a ticket tier of an event."""
-    return await ticket_tier_service.read_tier(db, event_id, tier_id)
+async def get_tier(event_id: UUID, tier_id: int, db: DbSession, user: OptionalUser):
+    """Get a single ticket tier of an event. Public endpoint.
+
+    Tiers of `draft` events are only visible to admins. Everyone else gets `404`.
+    """
+    include_draft = user is not None and user.role == UserRole.ADMIN
+    return await ticket_tier_service.read_tier(db, event_id, tier_id, include_draft)

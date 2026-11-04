@@ -4,12 +4,7 @@ from fastapi import APIRouter
 
 from app.api.deps import AdminUser, DbSession
 from app.schemas.error import ErrorResponse
-from app.schemas.ticket_tier import (
-    TierCreate,
-    TierDetailResponse,
-    TierResponse,
-    TierUpdate,
-)
+from app.schemas.ticket_tier import TierCreate, TierResponse, TierUpdate
 from app.services import ticket_tier_service
 
 router = APIRouter(prefix="/events/{event_id}/tiers", tags=["tiers"])
@@ -73,7 +68,7 @@ async def update_tier(
 
 @router.get(
     "/{tier_id}",
-    response_model=TierDetailResponse,
+    response_model=TierResponse,
     summary="Fetch a ticket tier",
     responses={
         404: {"model": ErrorResponse, "description": "Event or tier not found"},

@@ -3,16 +3,11 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
 
 from app.core.exceptions import ConflictError, NotFoundError
 from app.models import TicketTier
 from app.models.event import EVENT_STATUS_TRANSITION, Event
-from app.schemas.ticket_tier import (
-    TierCreate,
-    TierDetailResponse,
-    TierUpdate,
-)
+from app.schemas.ticket_tier import TierCreate, TierUpdate
 
 
 async def create_tier(
@@ -82,27 +77,17 @@ async def update_tier(
     return tier
 
 
-async def read_tier(
-    db: AsyncSession, event_id: UUID, tier_id: int
-) -> TierDetailResponse:
+async def read_tier(db: AsyncSession, event_id: UUID, tier_id: int) -> TicketTier:
     event = await db.get(Event, event_id)
     if event is None:
         raise NotFoundError("Event is not found")
 
     tier = await db.scalar(
-        select(TicketTier)
-        .options(joinedload(TicketTier.event))
-        .where(TicketTier.event_id == event_id, TicketTier.id == tier_id)
+        select(TicketTier).where(
+            TicketTier.event_id == event_id, TicketTier.id == tier_id
+        )
     )
     if tier is None:
         raise NotFoundError("Tier is not found")
 
-    return TierDetailResponse.model_validate(
-        {
-            "name": tier.name,
-            "price": tier.price,
-            "quota": tier.quota,
-            "created_at": tier.created_at,
-            "event": tier.event,
-        }
-    )
+    return tier

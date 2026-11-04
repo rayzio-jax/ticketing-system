@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from app.schemas.base import PatchSchema
 
@@ -25,8 +25,16 @@ class TierUpdate(PatchSchema):
 class TierResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    id: int
     event_id: UUID
     name: str
     price: int
     quota: int
+    sold: int = Field(exclude=True)
+
+    @computed_field
+    @property
+    def available(self) -> int:
+        return self.quota - self.sold
+
     created_at: datetime

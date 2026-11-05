@@ -25,6 +25,17 @@ class EventUpdate(PatchSchema):
     start_at: AwareDatetime | None = None
 
 
+class TierInfo(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    price: int
+    quota: int
+    sold: int = Field(exclude=True)
+    created_at: datetime
+
+
 class EventResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -34,6 +45,10 @@ class EventResponse(BaseModel):
     status: EventStatus
     start_at: datetime
     created_at: datetime
+
+
+class EventDetailResponse(EventResponse):
+    tiers: list[TierInfo]
 
 
 class EventListParams(BaseModel):

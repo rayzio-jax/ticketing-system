@@ -6,6 +6,7 @@ from uuid import UUID
 from sqlalchemy import select, tuple_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 from app.models import Event
@@ -41,23 +42,12 @@ async def create_event(db: AsyncSession, payload: EventCreate) -> Event:
     return event
 
 
-async def read_event(db: AsyncSession, event_id: UUID) -> Event:
-    event = await db.get(Event, event_id)
-    if event is None:
+async def read_event_detail(
+    db: AsyncSession, event_id: UUID, include_draft: bool = False
+) -> Event:
+    event = await db.get(Event, event_id, options=[selectinload(Event.tiers)])
+    if event is None or (event.status != EventStatus.PUBLISHED and not include_draft):
         raise NotFoundError("Event is not found")
-
-    return event
-
-
-async def read_public_event(db: AsyncSession, event_id: UUID) -> Event:
-    event = await read_event(db, event_id)
-    if (
-        event.status == EventStatus.DRAFT
-        or event.status == EventStatus.CANCELLED
-        or event.status == EventStatus.ENDED
-    ):
-        raise NotFoundError("Event is not found")
-
     return event
 
 
@@ -66,11 +56,7 @@ async def read_all_public_events(
 ) -> tuple[list[Event], str | None]:
     desc = params.order == "desc"
 
-    stmt = select(Event).where(
-        Event.status.not_in(
-            [EventStatus.DRAFT, EventStatus.ENDED, EventStatus.CANCELLED]
-        )
-    )
+    stmt = select(Event).where(Event.status.in_([EventStatus.PUBLISHED]))
 
     if params.cursor is not None:
         pos = tuple_(*_decode_cursor(params.cursor))

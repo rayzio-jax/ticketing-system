@@ -7,6 +7,7 @@ from app.models.user import UserRole
 from app.schemas.error import ErrorResponse
 from app.schemas.event import (
     EventCreate,
+    EventDetailResponse,
     EventListParams,
     EventListResponse,
     EventResponse,
@@ -40,7 +41,7 @@ async def create_event(db: DbSession, payload: EventCreate, _admin: AdminUser):
 
 @router.get(
     "/{event_id}",
-    response_model=EventResponse,
+    response_model=EventDetailResponse,
     summary="Get an event",
     responses={
         401: {"model": ErrorResponse, "description": "Invalid or expired token"},
@@ -57,9 +58,8 @@ async def get_event(db: DbSession, event_id: UUID, user: OptionalUser):
     Anonymous users and customers can only see events
     that are not in draft. Admins can see any event.
     """
-    if user is not None and user.role == UserRole.ADMIN:
-        return await event_service.read_event(db, event_id)
-    return await event_service.read_public_event(db, event_id)
+    include_draft = user is not None and user.role == UserRole.ADMIN
+    return await event_service.read_event_detail(db, event_id, include_draft)
 
 
 @router.get(

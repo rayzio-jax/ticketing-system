@@ -28,4 +28,11 @@ async def create_booking(
     db: DbSession,
     idem_key: Annotated[str, Header(min_length=8, max_length=255)],
 ):
+    """Public endpoint. Create a booking by the `tier_id` of the event.
+
+    Only 1 booking is available per 1 user, a booking will expired if
+    user has not proceed into payment within 15 minutes.
+    Booking is handled with idempotency key to prevent multiple
+    booking actions concurrently per user.
+    """
     return await booking_service.create_booking(db, current_user, idem_key, payload)

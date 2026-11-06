@@ -15,7 +15,7 @@ class BookingResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     user_id: UUID
-    ticket_id: int
+    tier_id: int
     qty: int
     total_amount: int
     status: BookingStatus

@@ -27,7 +27,7 @@ async def create_booking(
     tier.sold += payload.qty
     booking = Booking(
         user_id=user.id,
-        ticket_id=tier.id,
+        tier_id=tier.id,
         qty=payload.qty,
         total_amount=payload.qty * tier.price,
         expires_at=datetime.now(UTC)

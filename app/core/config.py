@@ -9,12 +9,12 @@ class Settings(BaseSettings):
     )
 
     app_name: str = "Ticketing API"
+    booking_expire_minutes: int = 15
     database_url: str
     jwt_algorithm: str
     jwt_secret: str
     access_token_expiration_minutes: int
     refresh_token_expiration_days: int
-    booking_expire_minutes: int
 
 
 settings = Settings()  # pyright: ignore[reportCallIssue]

@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     jwt_secret: str
     access_token_expiration_minutes: int
     refresh_token_expiration_days: int
+    booking_expire_minutes: int
 
 
 settings = Settings()  # pyright: ignore[reportCallIssue]

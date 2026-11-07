@@ -30,6 +30,18 @@ class BookingStatus(enum.StrEnum):
     CANCELLED = "cancelled"
 
 
+BOOKING_STATUS_TRANSITION: dict[BookingStatus, set[BookingStatus]] = {
+    BookingStatus.PENDING: {
+        BookingStatus.PAID,
+        BookingStatus.EXPIRED,
+        BookingStatus.CANCELLED,
+    },
+    BookingStatus.PAID: set(),
+    BookingStatus.EXPIRED: set(),
+    BookingStatus.CANCELLED: set(),
+}
+
+
 class Booking(TimestampMixin, Base):
     __tablename__ = "bookings"
     __table_args__ = (

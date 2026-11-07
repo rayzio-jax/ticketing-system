@@ -11,6 +11,7 @@ from sqlalchemy import (
     Index,
     String,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -36,6 +37,13 @@ class Booking(TimestampMixin, Base):
         CheckConstraint("total_amount >= 0", name="total_amount_non_negative"),
         UniqueConstraint("user_id", "idem_key", name="user_idem_key"),
         Index("ix_bookings_expires_at", "expires_at"),
+        Index(
+            "uq_bookings_pending_user_tier",
+            "user_id",
+            "tier_id",
+            unique=True,
+            postgresql_where=text("status = 'pending'"),
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)

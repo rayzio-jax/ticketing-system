@@ -12,6 +12,7 @@ router = APIRouter(prefix="/bookings", tags=["bookings"])
 
 @router.post(
     "",
+    status_code=201,
     response_model=BookingResponse,
     summary="Book an event ticket",
     responses={
@@ -19,6 +20,10 @@ router = APIRouter(prefix="/bookings", tags=["bookings"])
         404: {
             "model": ErrorResponse,
             "description": "Event or Ticket is not found",
+        },
+        409: {
+            "model": ErrorResponse,
+            "description": "Idempotency key used or no remaining quota left",
         },
     },
 )

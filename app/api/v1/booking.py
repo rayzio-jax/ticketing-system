@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, Query
 
 from app.api.deps import CurrentUser, DbSession
 from app.schemas.booking import BookingListParams, BookingRequest, BookingResponse
@@ -52,7 +52,7 @@ async def create_booking(
 
 
 @router.get(
-    "",
+    "/me",
     response_model=Page[BookingResponse],
     summary="Get all bookings owned by user",
     responses={
@@ -64,7 +64,7 @@ async def create_booking(
     },
 )
 async def list_user_bookings(
-    user: CurrentUser, db: DbSession, params: BookingListParams
+    user: CurrentUser, db: DbSession, params: Annotated[BookingListParams, Query()]
 ):
     """List the bookings of the logged-in user, newest first.
 

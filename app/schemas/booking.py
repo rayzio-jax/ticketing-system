@@ -1,14 +1,21 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.booking import BookingStatus
+from app.schemas.pagination import ListParamsSchema
 
 
 class BookingRequest(BaseModel):
     tier_id: int
     qty: int = Field(gt=0)
+
+
+class BookingListParams(ListParamsSchema):
+    order: Literal["asc", "desc"] = "desc"
+    status: BookingStatus | None = None
 
 
 class BookingResponse(BaseModel):

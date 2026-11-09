@@ -50,7 +50,7 @@ async def create_tier(
         404: {"model": ErrorResponse, "description": "Event or tier not found"},
         409: {
             "model": ErrorResponse,
-            "description": "Name already used, quota below sold tickets, or event is locked",
+            "description": "Duplicate name, quota below sold, or event locked",
         },
         422: {"model": ErrorResponse, "description": "Invalid input"},
     },

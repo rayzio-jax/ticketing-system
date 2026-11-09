@@ -6,6 +6,7 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from app.models.event import EventStatus
 from app.schemas.base import PatchSchema
+from app.schemas.pagination import ListParamsSchema
 
 
 class EventCreate(BaseModel):
@@ -51,11 +52,7 @@ class EventDetailResponse(EventResponse):
     tiers: list[TierInfo]
 
 
-class EventListParams(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    limit: int = Field(default=20, ge=1, le=100)
-    cursor: str | None = None
+class EventListParams(ListParamsSchema):
     order: Literal["asc", "desc"] = "asc"
 
 

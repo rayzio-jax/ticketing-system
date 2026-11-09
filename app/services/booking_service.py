@@ -7,10 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.exceptions import ConflictError, NotFoundError
+from app.core.pagination import paginate
 from app.models import Booking, Event, TicketTier, User
 from app.models.booking import BookingStatus
 from app.models.event import EventStatus
-from app.schemas.booking import BookingRequest
+from app.schemas.booking import BookingListParams, BookingRequest
 
 
 async def _find_booking(db: AsyncSession, user_id: UUID, idem_key: str):
@@ -81,3 +82,18 @@ async def create_booking(
         return existing
     await db.refresh(booking)
     return booking
+
+
+async def list_user_bookings(
+    db: AsyncSession, user: User, params: BookingListParams
+) -> tuple[list[Booking], str | None]:
+    stmt = select(Booking).where(Booking.user_id == user.id)
+    return await paginate(
+        db,
+        stmt,
+        sort_col=Booking.created_at,
+        id_col=Booking.id,
+        limit=params.limit,
+        cursor=params.cursor,
+        desc=params.order == "desc",
+    )

@@ -76,4 +76,8 @@ async def list_user_bookings(
     `cursor` to get the next page; `null` means there are no more pages. Keep
     the same `order` and `status` across pages.
     """
-    return await booking_service.list_user_bookings(db, user, params)
+    bookings, next_cursor = await booking_service.list_user_bookings(db, user, params)
+    return Page[BookingResponse](
+        items=[BookingResponse.model_validate(booking) for booking in bookings],
+        next_cursor=next_cursor,
+    )

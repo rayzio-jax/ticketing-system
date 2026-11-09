@@ -13,6 +13,7 @@ from app.schemas.event import (
     EventResponse,
     EventUpdate,
 )
+from app.schemas.pagination import Page
 from app.services import event_service
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -64,7 +65,7 @@ async def get_event(db: DbSession, event_id: UUID, user: OptionalUser):
 
 @router.get(
     "",
-    response_model=EventListResponse,
+    response_model=Page[EventListResponse],
     summary="List public events",
     responses={
         422: {
@@ -82,7 +83,10 @@ async def get_all_events(db: DbSession, params: Annotated[EventListParams, Query
     across pages.
     """
     events, next_cursor = await event_service.read_all_public_events(db, params)
-    return {"items": events, "next_cursor": next_cursor}
+    return Page[EventListResponse](
+        items=[EventListResponse.model_validate(event) for event in events],
+        next_cursor=next_cursor,
+    )
 
 
 @router.patch(

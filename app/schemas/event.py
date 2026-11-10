@@ -54,8 +54,3 @@ class EventDetailResponse(EventResponse):
 
 class EventListParams(ListParamsSchema):
     order: Literal["asc", "desc"] = "asc"
-
-
-class EventListResponse(BaseModel):
-    items: list[EventResponse]
-    next_cursor: str | None

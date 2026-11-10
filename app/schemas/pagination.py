@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -10,5 +9,5 @@ class ListParamsSchema(BaseModel):
 
 
 class Page[T](BaseModel):
-    items: list[T]
+    data: list[T]
     next_cursor: str | None = None

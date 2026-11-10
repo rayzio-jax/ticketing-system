@@ -78,6 +78,6 @@ async def list_user_bookings(
     """
     bookings, next_cursor = await booking_service.list_user_bookings(db, user, params)
     return Page[BookingResponse](
-        items=[BookingResponse.model_validate(booking) for booking in bookings],
+        data=[BookingResponse.model_validate(booking) for booking in bookings],
         next_cursor=next_cursor,
     )

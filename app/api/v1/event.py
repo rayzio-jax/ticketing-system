@@ -9,7 +9,6 @@ from app.schemas.event import (
     EventCreate,
     EventDetailResponse,
     EventListParams,
-    EventListResponse,
     EventResponse,
     EventUpdate,
 )
@@ -65,7 +64,7 @@ async def get_event(db: DbSession, event_id: UUID, user: OptionalUser):
 
 @router.get(
     "",
-    response_model=Page[EventListResponse],
+    response_model=Page[EventResponse],
     summary="List public events",
     responses={
         422: {
@@ -83,8 +82,8 @@ async def get_all_events(db: DbSession, params: Annotated[EventListParams, Query
     across pages.
     """
     events, next_cursor = await event_service.read_all_public_events(db, params)
-    return Page[EventListResponse](
-        items=[EventListResponse.model_validate(event) for event in events],
+    return Page[EventResponse](
+        data=[EventResponse.model_validate(event) for event in events],
         next_cursor=next_cursor,
     )
 

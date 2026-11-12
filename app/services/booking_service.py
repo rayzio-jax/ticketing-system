@@ -14,7 +14,7 @@ from app.models.event import EventStatus
 from app.schemas.booking import BookingListParams, BookingRequest
 
 
-async def _find_booking(db: AsyncSession, user_id: UUID, idem_key: str):
+async def _find_duplicate_booking(db: AsyncSession, user_id: UUID, idem_key: str):
     return await db.scalar(
         select(Booking).where(Booking.user_id == user_id, Booking.idem_key == idem_key)
     )
@@ -33,7 +33,7 @@ async def _find_pending_booking(
     )
 
 
-async def _replay_or_existing(payload: BookingRequest, booking: Booking):
+async def _ensure_same_request(payload: BookingRequest, booking: Booking):
     if booking.tier_id != payload.tier_id or booking.qty != payload.qty:
         raise ConflictError("Idempotency key was already used with a different request")
 
@@ -41,9 +41,10 @@ async def _replay_or_existing(payload: BookingRequest, booking: Booking):
 async def create_booking(
     db: AsyncSession, user: User, idem_key: str, payload: BookingRequest
 ) -> Booking:
-    existing = await _find_booking(db, user.id, idem_key)
+    existing = await _find_duplicate_booking(db, user.id, idem_key)
     if existing is not None:
-        await _replay_or_existing(payload, existing)
+        await _ensure_same_request(payload, existing)
+        return existing
 
     pending = await _find_pending_booking(db, user.id, payload.tier_id)
     if pending is not None:
@@ -75,10 +76,10 @@ async def create_booking(
         await db.commit()
     except IntegrityError:
         await db.rollback()
-        existing = await _find_booking(db, user.id, idem_key)
+        existing = await _find_duplicate_booking(db, user.id, idem_key)
         if existing is None:
             raise
-        await _replay_or_existing(payload, existing)
+        await _ensure_same_request(payload, existing)
         return existing
     await db.refresh(booking)
     return booking

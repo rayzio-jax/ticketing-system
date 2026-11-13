@@ -1,5 +1,14 @@
+import logging
 from contextlib import asynccontextmanager
 
+from apscheduler.events import (
+    EVENT_JOB_ERROR,
+    EVENT_JOB_EXECUTED,
+    EVENT_JOB_MISSED,
+    JobExecutionEvent,
+)
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -9,14 +18,62 @@ from app.api.deps import DbSession
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.exceptions import AppError
+from app.core.logging import setup_logging
 from app.db.session import engine
+from app.tasks.expiry import run_expiry
+
+logger = logging.getLogger(__name__)
+
+
+def log_scheduler_event(e: JobExecutionEvent) -> None:
+    if e.code == EVENT_JOB_EXECUTED:
+        logger.info(
+            "Job %s done; scheduled_at=%s",
+            e.job_id,
+            e.scheduled_run_time,
+        )
+    elif e.code == EVENT_JOB_ERROR:
+        logger.error(
+            "Job %s failed; scheduled_at=%s; exception=%r",
+            e.job_id,
+            e.scheduled_run_time,
+            e.exception,
+        )
+    elif e.code == EVENT_JOB_MISSED:
+        logger.warning(
+            "Job %s skipped; scheduled_at=%s",
+            e.job_id,
+            e.scheduled_run_time,
+        )
+
+
+setup_logging()
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI):
+async def lifespan(app: FastAPI):
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(
+        run_expiry,
+        IntervalTrigger(minutes=1),
+        id="expire_bookings",
+        coalesce=True,
+        max_instances=1,
+    )
+    scheduler.add_listener(
+        log_scheduler_event,
+        EVENT_JOB_EXECUTED | EVENT_JOB_ERROR | EVENT_JOB_MISSED,
+    )
+
+    logger.info("Starting app and scheduler")
+    scheduler.start()
+    app.state.scheduler = scheduler
+
     try:
         yield
     finally:
+        logger.info("Stopping app and scheduler")
+        scheduler.shutdown()
         await engine.dispose()
 
 

@@ -91,6 +91,8 @@ async def list_user_bookings(
     db: AsyncSession, user: User, params: BookingListParams
 ) -> tuple[list[Booking], str | None]:
     stmt = select(Booking).where(Booking.user_id == user.id)
+    if params.status is not None:
+        stmt = stmt.where(Booking.status == params.status)
     return await paginate(
         db,
         stmt,

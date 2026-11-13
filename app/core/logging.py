@@ -1,7 +1,5 @@
 import logging
 
-from uvicorn.logging import DefaultFormatter
-
 
 def setup_logging(level: int = logging.INFO) -> None:
     logging.basicConfig(

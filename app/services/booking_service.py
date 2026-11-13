@@ -33,7 +33,7 @@ async def _find_pending_booking(
     )
 
 
-async def _ensure_same_request(payload: BookingRequest, booking: Booking):
+def _ensure_same_request(payload: BookingRequest, booking: Booking):
     if booking.tier_id != payload.tier_id or booking.qty != payload.qty:
         raise ConflictError("Idempotency key was already used with a different request")
 
@@ -43,7 +43,7 @@ async def create_booking(
 ) -> Booking:
     existing = await _find_duplicate_booking(db, user.id, idem_key)
     if existing is not None:
-        await _ensure_same_request(payload, existing)
+        _ensure_same_request(payload, existing)
         return existing
 
     pending = await _find_pending_booking(db, user.id, payload.tier_id)
@@ -77,10 +77,12 @@ async def create_booking(
     except IntegrityError:
         await db.rollback()
         existing = await _find_duplicate_booking(db, user.id, idem_key)
-        if existing is None:
-            raise
-        await _ensure_same_request(payload, existing)
-        return existing
+        if existing is not None:
+            _ensure_same_request(payload, existing)
+            return existing
+        if await _find_pending_booking(db, user.id, payload.tier_id) is not None:
+            raise ConflictError("There is an existing booking in pending") from None
+        raise
     await db.refresh(booking)
     return booking
 

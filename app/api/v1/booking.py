@@ -1,8 +1,10 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Header, Query
 
 from app.api.deps import CurrentUser, DbSession
+from app.models.user import UserRole
 from app.schemas.booking import BookingListParams, BookingRequest, BookingResponse
 from app.schemas.error import ErrorResponse
 from app.schemas.pagination import Page
@@ -81,3 +83,29 @@ async def list_user_bookings(
         data=[BookingResponse.model_validate(booking) for booking in bookings],
         next_cursor=next_cursor,
     )
+
+
+@router.patch(
+    "/{booking_id}/cancel",
+    response_model=BookingResponse,
+    summary="Cancel a booking",
+    responses={
+        401: {"model": ErrorResponse, "description": "Invalid or expired token"},
+        404: {"model": ErrorResponse, "description": "Booking not found"},
+        409: {
+            "model": ErrorResponse,
+            "description": "Booking is not pending and cannot be cancelled",
+        },
+        422: {"model": ErrorResponse, "description": "Invalid booking id"},
+    },
+)
+async def cancel_booking(booking_id: UUID, user: CurrentUser, db: DbSession):
+    """Cancel a pending booking and release its tickets.
+
+    Customers can only cancel their own bookings, and admins can cancel any
+    booking. Only `pending` bookings can be cancelled; `paid`, `expired` and
+    already `cancelled` bookings return `409`. A booking that does not exist, or
+    belongs to another user, returns `404`.
+    """
+    owner_id = None if user.role == UserRole.ADMIN else user.id
+    return await booking_service.cancel_booking(db, booking_id, owner_id)

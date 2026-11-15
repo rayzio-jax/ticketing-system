@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -102,3 +102,40 @@ async def list_user_bookings(
         cursor=params.cursor,
         desc=params.order == "desc",
     )
+
+
+async def cancel_booking(
+    db: AsyncSession, booking_id: UUID, owner_id: UUID | None
+) -> Booking:
+    conditions = [Booking.id == booking_id]
+    if owner_id is not None:
+        conditions.append(Booking.user_id == owner_id)
+
+    row = (
+        await db.execute(
+            update(Booking)
+            .where(
+                *conditions,
+                Booking.status == BookingStatus.PENDING,
+            )
+            .values(status=BookingStatus.CANCELLED)
+            .returning(Booking.tier_id, Booking.qty)
+        )
+    ).first()
+
+    if row is None:
+        booking = await db.scalar(select(Booking).where(*conditions))
+        if booking is None:
+            raise NotFoundError("Booking not found")
+        raise ConflictError(f"Cannot cancel a booking that is {booking.status}")
+
+    tier_id, qty = row
+    await db.execute(
+        update(TicketTier)
+        .where(TicketTier.id == tier_id)
+        .values(sold=TicketTier.sold - qty)
+    )
+    await db.commit()
+    return (
+        await db.execute(select(Booking).where(Booking.id == booking_id))
+    ).scalar_one()

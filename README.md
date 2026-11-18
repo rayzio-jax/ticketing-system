@@ -19,17 +19,17 @@ Most CRUD demos never face real backend problems. This one is designed around th
 
 ## Tech Stack
 
-| Layer                  | Choice                                          |
-| ---------------------- | ----------------------------------------------- |
-| Framework              | FastAPI                                         |
-| Database               | PostgreSQL                                      |
-| ORM                    | SQLAlchemy 2.0 (async, `asyncpg`)               |
-| Migrations             | Alembic                                         |
-| Config                 | Pydantic Settings                               |
-| Auth _(planned)_       | JWT (access + refresh), Argon2 password hashing |
-| Scheduling _(planned)_ | APScheduler                                     |
-| Testing _(planned)_    | Pytest, pytest-asyncio, httpx                   |
-| Tooling                | uv, Ruff, Docker Compose                        |
+| Layer      | Choice                                          |
+| ---------- | ----------------------------------------------- |
+| Framework  | FastAPI                                         |
+| Database   | PostgreSQL                                      |
+| ORM        | SQLAlchemy 2.0 (async, `asyncpg`)               |
+| Migrations | Alembic                                         |
+| Config     | Pydantic Settings                               |
+| Auth       | JWT (access + refresh), Argon2 password hashing |
+| Scheduling | APScheduler                                     |
+| Testing    | Pytest, pytest-asyncio, httpx                   |
+| Tooling    | uv, Ruff, Docker Compose                        |
 
 ## Architecture
 
@@ -124,8 +124,8 @@ curl http://localhost:8000/health
 - [x] Models and first Alembic migration
 - [x] Auth: register, login, JWT, refresh token
 - [x] RBAC (admin / customer)
-- [ ] Event and ticket tier management
-- [ ] Booking flow (naive version)
+- [x] Event and ticket tier management
+- [x] Booking flow (naive version)
 - [ ] **Concurrency control** (row locking / atomic update) with proof via load test
 - [ ] Idempotent booking requests
 - [ ] Automatic booking expiry
@@ -145,17 +145,20 @@ curl http://localhost:8000/health
 
 > _Endpoint table will be added as features land._
 
-| Method | Endpoint             | Description                                      | Auth                           |
-| ------ | -------------------- | ------------------------------------------------ | ------------------------------ |
-| GET    | `/health`            | Service and database health check                | Public                         |
-| POST   | `/auth/register`     | Register a new customer account                  | Public                         |
-| POST   | `/auth/login`        | Exchange credentials for tokens                  | Public                         |
-| POST   | `/auth/refresh`      | Exchange a refresh token for a new access token  | Public (refresh token in body) |
-| GET    | `/auth/me`           | Get the current user                             | Bearer                         |
-| POST   | `/events`            | Create an event (always starts as `draft`)       | Admin                          |
-| GET    | `/events`            | List events, cursor-paginated (excludes `draft`) | Public                         |
-| GET    | `/events/{event_id}` | Get one event (admins can see `draft`)           | Public / Admin                 |
-| PATCH  | `/events/{event_id}` | Partially update an event                        | Admin                          |
+| Method | Endpoint                        | Description                                      | Auth                           |
+| ------ | ------------------------------- | ------------------------------------------------ | ------------------------------ |
+| GET    | `/health`                       | Service and database health check                | Public                         |
+| POST   | `/auth/register`                | Register a new customer account                  | Public                         |
+| POST   | `/auth/login`                   | Exchange credentials for tokens                  | Public                         |
+| POST   | `/auth/refresh`                 | Exchange a refresh token for a new access token  | Public (refresh token in body) |
+| GET    | `/auth/me`                      | Get the current user                             | Bearer                         |
+| POST   | `/events`                       | Create an event (always starts as `draft`)       | Admin                          |
+| GET    | `/events`                       | List events, cursor-paginated (excludes `draft`) | Public                         |
+| GET    | `/events/{event_id}`            | Get one event (admins can see `draft`)           | Public / Admin                 |
+| PATCH  | `/events/{event_id}`            | Partially update an event                        | Admin                          |
+| POST   | `/bookings`                     | Create a new booking (initiated as `pending`)    | Public                         |
+| GET    | `/bookings/me`                  | List bookings of current user, cursor-paginated  | Public                         |
+| PATCH  | `/bookings/{booking_id}/cancel` | Cancel a booking                                 | Public / Admin                 |
 
 ## Conventions
 

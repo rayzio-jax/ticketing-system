@@ -224,4 +224,4 @@ uv run ruff format .
 
 ## License
 
-MIT
+[MIT](./LICENSE)
